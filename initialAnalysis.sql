@@ -35,6 +35,27 @@ LEFT JOIN stores AS s
 ON data_diffs.store_id = s.store_id
 GROUP BY s.store_name;
 
--------------Which stores find themselves with low stock most often?----------------
+-------------Which stores find themselves with the most repeat customers?----------------
 
+/*
+    This query produces a table that tallies the number of repeat customers each store has.
+    A repeat customer is anyone who has made 2 or more purchases. The table shows that Baldwin
+    Bikes has the best customer retention.
+ */
 
+SELECT store_name, num_repeat_customers FROM (
+    SELECT store_name, COUNT(repeats) AS num_repeat_customers FROM (
+        SELECT store_name, customer_id, COUNT(customer_id) AS repeats FROM orders AS o
+        LEFT JOIN stores as s
+        ON s.store_id = o.store_id
+        GROUP BY s.store_name, customer_id) AS repeat_count
+    GROUP BY store_name) as final_totals;
+
+----------------Preliminary conclusions-------------------------
+/*
+    These few queries have shown that Baldwin Bikes is the best performing store
+    in this chain. This appears to be related to their efficiency with orders
+    and their customer service as they have about 4x more repeat customers
+    than the other two stores. It would be wise to investigate this store and
+    try to apply their strategies to the others.
+ */

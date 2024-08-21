@@ -9,4 +9,4 @@ Analysis Questions:
 - How do the total sales compare between stores each month?
   - And how are sales at each store changing between months?
 - How does order fulfillment time compare between stores?
-- Which stores find themselves with low stock most often?
+- Which stores find themselves with the most repeat customers?
