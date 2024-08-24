@@ -8,7 +8,7 @@
 
 SELECT store_name, CAST(SUM(total_sale) AS decimal(10, 2)) AS monthly_sales,
        TO_CHAR(o.order_date, 'YYYY-MM') AS month FROM (
-    SELECT order_id, SUM((quantity * list_price) * (1-discount)) AS total_sale FROM order_items
+    SELECT order_id, SUM(quantity * list_price * (1-discount)) AS total_sale FROM order_items
     GROUP BY order_id) AS order_sums
 LEFT JOIN orders as o
 ON order_sums.order_id = o.order_id
@@ -39,17 +39,34 @@ GROUP BY s.store_name;
 
 /*
     This query produces a table that tallies the number of repeat customers each store has.
-    A repeat customer is anyone who has made 2 or more purchases. The table shows that Baldwin
-    Bikes has the best customer retention.
+    A repeat customer is anyone who has made 2 or more purchases. This table shows that Baldwin
+    Bikes and Santa Cruz Bikes have the best customer retention.
  */
 
-SELECT store_name, num_repeat_customers FROM (
-    SELECT store_name, COUNT(repeats) AS num_repeat_customers FROM (
-        SELECT store_name, customer_id, COUNT(customer_id) AS repeats FROM orders AS o
-        LEFT JOIN stores as s
-        ON s.store_id = o.store_id
-        GROUP BY s.store_name, customer_id) AS repeat_count
-    GROUP BY store_name) as final_totals;
+SELECT store_name, COUNT(repeats) AS num_repeat_customers FROM (
+    SELECT store_name, customer_id, COUNT(customer_id) AS repeats FROM orders AS o
+    LEFT JOIN stores as s
+    ON s.store_id = o.store_id
+    GROUP BY s.store_name, customer_id) AS repeat_count
+WHERE repeats > 1
+GROUP BY store_name;
+
+/*
+    This query produces a table showing how many customers
+    have placed 1, 2, and 3 orders respectively. With this information
+    we can determine the percentage of each store's customer base
+    that place multiple orders.
+ */
+
+SELECT store_name, COUNT(CASE WHEN num_repeats = 1 THEN 1 END) AS num_ones,
+       COUNT(CASE WHEN num_repeats = 2 THEN 1 END) AS num_twos,
+       COUNT(CASE WHEN num_repeats = 3 THEN 1 END) AS num_threes
+FROM (
+    SELECT store_name, COUNT(customer_id) AS num_repeats FROM orders AS o
+    LEFT JOIN stores as s
+    ON s.store_id = o.store_id
+    GROUP BY s.store_name, customer_id) as repeats
+GROUP BY store_name;
 
 ----------------Preliminary conclusions-------------------------
 /*
